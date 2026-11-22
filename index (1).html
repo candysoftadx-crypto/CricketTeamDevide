@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f2a22">
+<title>Cricket Team Maker</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏏</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0f2a22; --panel:#173a30; --line:#2a5546; --text:#f1f5ee; --muted:#9db8ab;
+  --red:#e0463a; --blue:#7cc4e8; --gold:#f2c14e; --on-accent:#10211b;
+}
+*{box-sizing:border-box;margin:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  background:var(--bg);color:var(--text);
+  font-family:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  min-height:100vh;
+  padding:max(16px,env(safe-area-inset-top)) 16px max(32px,env(safe-area-inset-bottom));
+}
+main{max-width:520px;margin:0 auto}
+h1{font-size:2rem;font-weight:800;letter-spacing:-.02em;line-height:1.05;margin:8px 0 4px}
+.sub{color:var(--muted);font-size:.95rem;margin-bottom:20px}
+section{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:16px}
+h2{font-size:1.05rem;font-weight:600;margin-bottom:12px}
+label{display:block;font-size:.85rem;color:var(--muted);margin-bottom:6px}
+input[type=text]{
+  width:100%;font:inherit;font-size:1rem;color:var(--text);background:var(--bg);
+  border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:14px;
+}
+input:focus,button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.stars{display:flex;gap:4px;margin-bottom:14px}
+.star{
+  background:none;border:0;font-size:2rem;line-height:1;color:var(--line);
+  padding:4px 6px;cursor:pointer;min-width:44px;min-height:44px;
+}
+.star.on{color:var(--gold)}
+.small .star{font-size:1.25rem;min-width:30px;min-height:32px;padding:2px}
+.btn{
+  width:100%;font:inherit;font-weight:600;font-size:1rem;border:0;border-radius:10px;
+  padding:14px;cursor:pointer;background:var(--gold);color:var(--on-accent);min-height:48px;
+}
+.btn.alt{background:transparent;color:var(--text);border:1px solid var(--line)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.row{display:flex;gap:10px}
+.row .btn{flex:1}
+ul{list-style:none;padding:0}
+li.p{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 0;border-top:1px solid var(--line)}
+li.p:first-child{border-top:0}
+.name{font-weight:600;word-break:break-word;flex:1;min-width:0}
+.del{background:none;border:0;color:var(--muted);font-size:1.3rem;cursor:pointer;min-width:40px;min-height:40px}
+.empty{color:var(--muted);font-size:.95rem}
+.count{color:var(--muted);font-weight:400}
+.toss{
+  text-align:center;padding:18px 12px;border-radius:12px;margin-bottom:14px;
+  background:var(--gold);color:var(--on-accent);
+}
+.toss b{display:block;font-size:1.5rem;font-weight:800;line-height:1.1;margin-top:2px}
+.team{border-radius:12px;padding:14px;margin-bottom:12px;border:2px solid}
+.team.a{border-color:var(--red)} .team.b{border-color:var(--blue)}
+.team h3{display:flex;justify-content:space-between;align-items:baseline;font-size:1.2rem;font-weight:800}
+.team.a h3{color:var(--red)} .team.b h3{color:var(--blue)}
+.meta{font-size:.85rem;color:var(--muted);margin:2px 0 8px}
+.tag{font-size:.75rem;font-weight:600;background:var(--gold);color:var(--on-accent);padding:3px 8px;border-radius:99px}
+.tp{display:flex;justify-content:space-between;padding:6px 0;border-top:1px solid var(--line)}
+.tp:first-of-type{border-top:0}
+.tp span:last-child{color:var(--gold);letter-spacing:1px}
+.hide{display:none}
+</style>
+</head>
+<body>
+<main>
+  <h1>Cricket Team Maker</h1>
+  <p class="sub">Players add karo, rating do, aur balanced teams bana lo.</p>
+
+  <section id="addBox">
+    <h2>Player add karo</h2>
+    <label for="pname">Player ka naam</label>
+    <input id="pname" type="text" maxlength="30" autocomplete="off" placeholder="Jaise: Rohit">
+    <label>Rating (1 se 5)</label>
+    <div class="stars" id="newStars" role="radiogroup" aria-label="Rating"></div>
+    <button class="btn" id="addBtn">Player add karo</button>
+  </section>
+
+  <section>
+    <h2>Players <span class="count" id="cnt">(0)</span></h2>
+    <ul id="list"></ul>
+    <p class="empty" id="empty">Abhi koi player nahi hai.</p>
+  </section>
+
+  <section>
+    <button class="btn" id="makeBtn" disabled>Teams banao</button>
+    <p class="empty" id="hint" style="margin-top:10px;text-align:center">Kam se kam 4 players chahiye.</p>
+  </section>
+
+  <section id="result" class="hide">
+    <div class="toss" id="toss"></div>
+    <div id="teams"></div>
+    <div class="row">
+      <button class="btn alt" id="reBtn">Dobara shuffle</button>
+      <button class="btn alt" id="resetBtn">Sab clear</button>
+    </div>
+  </section>
+</main>
+
+<script>
+(function(){
+  var KEY = "cricket-players-v1";
+  var players = [];
+  var newRating = 3;
+
+  function load(){ try { var d = JSON.parse(localStorage.getItem(KEY)); if (Array.isArray(d)) players = d; } catch(e){} }
+  function save(){ try { localStorage.setItem(KEY, JSON.stringify(players)); } catch(e){} }
+
+  var $ = function(id){ return document.getElementById(id); };
+  function esc(s){ return s.replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
+
+  function starsHtml(val){
+    var h = "";
+    for (var i = 1; i <= 5; i++) h += '<button type="button" class="star' + (i <= val ? " on" : "") + '" data-v="' + i + '" aria-label="' + i + ' star">★</button>';
+    return h;
+  }
+  function renderNewStars(){ $("newStars").innerHTML = starsHtml(newRating); }
+
+  function render(){
+    $("cnt").textContent = "(" + players.length + ")";
+    $("empty").classList.toggle("hide", players.length > 0);
+    $("list").innerHTML = players.map(function(p, i){
+      return '<li class="p"><span class="name">' + esc(p.name) + '</span>' +
+        '<span class="stars small" style="margin:0" data-i="' + i + '">' + starsHtml(p.rating) + '</span>' +
+        '<button class="del" data-del="' + i + '" aria-label="Remove ' + esc(p.name) + '">✕</button></li>';
+    }).join("");
+    var ok = players.length >= 4;
+    $("makeBtn").disabled = !ok;
+    $("hint").classList.toggle("hide", ok);
+  }
+
+  function addPlayer(){
+    var n = $("pname").value.trim();
+    if (!n) { $("pname").focus(); return; }
+    players.push({ name: n, rating: newRating });
+    save();
+    $("pname").value = "";
+    newRating = 3; renderNewStars();
+    render();
+    $("pname").focus();
+  }
+
+  function shuffle(a){
+    a = a.slice();
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+  function sum(a){ return a.reduce(function(s, p){ return s + p.rating; }, 0); }
+
+  // Har rating (5,4,3,2,1) ke players ko dono teams me baraabar baanta jata hai
+  // (jaise 5 star wale 5 hain to 3-2), phir best total wala random split chuna jata hai.
+  function makeTeams(){
+    var best = Infinity, cands = [];
+    for (var k = 0; k < 600; k++) {
+      var A = [], B = [];
+      for (var r = 5; r >= 1; r--) {
+        var g = shuffle(players.filter(function(p){ return p.rating === r; }));
+        var aFirst = A.length < B.length ? true : (A.length > B.length ? false : Math.random() < 0.5);
+        g.forEach(function(p, i){
+          var toA = (i % 2 === 0) ? aFirst : !aFirst;
+          (toA ? A : B).push(p);
+        });
+      }
+      var diff = Math.abs(sum(A) / A.length - sum(B) / B.length);
+      if (diff < best - 1e-9) { best = diff; cands = [[A, B]]; }
+      else if (Math.abs(diff - best) < 1e-9) cands.push([A, B]);
+    }
+    var pick = cands[Math.floor(Math.random() * cands.length)];
+    if (Math.random() < 0.5) pick = [pick[1], pick[0]];
+    return pick;
+  }
+
+  function teamHtml(cls, title, team, bats){
+    var total = sum(team), avg = (total / team.length).toFixed(2);
+    var rows = team.slice().sort(function(a, b){ return b.rating - a.rating; }).map(function(p){
+      return '<div class="tp"><span>' + esc(p.name) + '</span><span>' + "★".repeat(p.rating) + '</span></div>';
+    }).join("");
+    return '<div class="team ' + cls + '"><h3><span>' + title + '</span>' +
+      (bats ? '<span class="tag">Pehle batting</span>' : '<span class="tag" style="background:var(--line);color:var(--text)">Bowling</span>') +
+      '</h3><div class="meta">' + team.length + ' players · total ' + total + ' · avg ' + avg + '</div>' + rows + '</div>';
+  }
+
+  function showTeams(){
+    var t = makeTeams();
+    var batsFirst = Math.random() < 0.5 ? 0 : 1;
+    var names = ["Team A", "Team B"];
+    $("toss").innerHTML = 'Toss result<b>' + names[batsFirst] + ' pehle batting karegi</b>';
+    $("teams").innerHTML = teamHtml("a", names[0], t[0], batsFirst === 0) + teamHtml("b", names[1], t[1], batsFirst === 1);
+    $("result").classList.remove("hide");
+    $("result").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  $("newStars").addEventListener("click", function(e){
+    var b = e.target.closest(".star"); if (!b) return;
+    newRating = +b.dataset.v; renderNewStars();
+  });
+  $("list").addEventListener("click", function(e){
+    var d = e.target.closest("[data-del]");
+    if (d) { players.splice(+d.dataset.del, 1); save(); render(); return; }
+    var s = e.target.closest(".star");
+    if (s) { var i = +s.closest("[data-i]").dataset.i; players[i].rating = +s.dataset.v; save(); render(); }
+  });
+  $("addBtn").addEventListener("click", addPlayer);
+  $("pname").addEventListener("keydown", function(e){ if (e.key === "Enter") addPlayer(); });
+  $("makeBtn").addEventListener("click", showTeams);
+  $("reBtn").addEventListener("click", showTeams);
+  $("resetBtn").addEventListener("click", function(){
+    if (confirm("Saare players hata dein?")) { players = []; save(); render(); $("result").classList.add("hide"); }
+  });
+
+  load(); renderNewStars(); render();
+})();
+</script>
+</body>
+</html>
